@@ -1,4 +1,8 @@
 
+# GAE/Go mobile backend
+
+* Only user management and authentication sample.
+
 # How to create
 
 ## Create keys
