@@ -35,15 +35,13 @@ goapp serve app
 ```
 $ curl -d '{}' http://localhost:8080/user/registration
 
-{"Success":true,"UserToken":"1818b108-cff9-487d-aa45-16e08c5e6e1f"}
+{"Success":true,"UserID":5629499534213120,"UserToken":"eee0e93e-9737-4dd6-aa43-965976d78929"}
 
+curl -d '{"UserID":5629499534213120,"UserToken":"eee0e93e-9737-4dd6-aa43-965976d78929"}' http://localhost:8080/user/authentication
 
-$ curl -d '{"UserToken":"17c4e334-d080-4afc-adcf-cd422062ba6c"}' http://localhost:8080/user/authentication
+{"Success":true,"AccessToken":"eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0ODY3ODMwNjcsInN1YiI6NTYyOTQ5OTUzNDIxMzEyMH0.BLgQjGRitA_LYf_Qi5pwPJxAgncz9y5dYtPlmslC4A7uLqE2DrhL32Acx82MCBGF__oZ1LKRwssDXmpHQG1eeQ"}
 
-{"Success":true,"AccessToken":"eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0ODIyOTI4NTMsInN1YiI6NTczMzk1MzEzODg1MTg0MH0.YTXKG7b9n7kUNJ1oXGvwOdA3-xpLDg9kkiTv3BXaqT_NoyBSKyJYp8523J6Km9OwqgRYGLR3_scI3JTYc4ojzg"}
+curl -H 'Authorization: Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0ODY3ODMwNjcsInN1YiI6NTYyOTQ5OTUzNDIxMzEyMH0.BLgQjGRitA_LYf_Qi5pwPJxAgncz9y5dYtPlmslC4A7uLqE2DrhL32Acx82MCBGF__oZ1LKRwssDXmpHQG1eeQ' http://localhost:8080/hello
 
-
-$ curl -H 'Authorization: Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0ODIyOTI4NTMsInN1YiI6NTczMzk1MzEzODg1MTg0MH0.YTXKG7b9n7kUNJ1oXGvwOdA3-xpLDg9kkiTv3BXaqT_NoyBSKyJYp8523J6Km9OwqgRYGLR3_scI3JTYc4ojzg' http://localhost:8080/hello
-
-{"Success":true,"Message":"Hello 5733953138851840"}
+{"Success":true,"Message":"Hello 5629499534213120"}
 ```

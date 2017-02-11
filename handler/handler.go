@@ -44,6 +44,7 @@ type RegistrationHandlerRequest struct {
 
 type RegistrationHandlerResponse struct {
 	Success   bool
+	UserID    int64
 	UserToken string
 }
 
@@ -66,47 +67,36 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
 
 	var userData UserData
-	success := false
 
-	// Try to create user. Retry if UserToken is duplicated.
-	for i := 0; i < registrationRetryMax; i++ {
+	UserToken := uuid.NewV4().String()
 
-		UserToken := uuid.NewV4().String()
+	key := datastore.NewIncompleteKey(ctx, userDataStoreName, nil)
+	userData = UserData{UserToken: UserToken}
 
-		query := datastore.NewQuery(userDataStoreName).KeysOnly().Filter("UserToken =", UserToken)
-		keys, err := query.GetAll(ctx, nil)
-		if err != nil || len(keys) > 0 {
-			continue
-		}
-
-		key := datastore.NewIncompleteKey(ctx, userDataStoreName, nil)
-		userData = UserData{UserToken: UserToken}
-
-		if newKey, err := datastore.Put(ctx, key, &userData); err == nil {
-			// denormalization metadata
-			userData.IntID = newKey.IntID()
-			if _, err := datastore.Put(ctx, newKey, &userData); err != nil {
-				log.Errorf(ctx, "Faild to registration: %v (%v)", req, err)
-				EncodeJson(w, RegistrationHandlerResponse{Success: false})
-				return
-			}
-			success = true
-			break
-		} else {
-			continue
-		}
-	}
-
-	if !success {
+	var err error
+	if key, err = datastore.Put(ctx, key, &userData); err != nil {
 		log.Errorf(ctx, "Failed to registration: %v", req)
 		EncodeJson(w, RegistrationHandlerResponse{Success: false})
 		return
 	}
 
-	EncodeJson(w, RegistrationHandlerResponse{Success: true, UserToken: userData.UserToken})
+	// denormalization metadata
+	userData.IntID = key.IntID()
+	if _, err := datastore.Put(ctx, key, &userData); err != nil {
+		log.Errorf(ctx, "Faild to registration: %v (%v)", req, err)
+		EncodeJson(w, RegistrationHandlerResponse{Success: false})
+		return
+	}
+
+	EncodeJson(w, RegistrationHandlerResponse{
+		Success: true,
+		UserID: userData.IntID,
+		UserToken: userData.UserToken,
+	})
 }
 
 type AuthenticationHandlerRequest struct {
+	UserID int64
 	UserToken string
 }
 
@@ -121,7 +111,7 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := appengine.NewContext(r)
 
-	query := datastore.NewQuery(userDataStoreName).KeysOnly().Filter("UserToken =", req.UserToken)
+	query := datastore.NewQuery(userDataStoreName).KeysOnly().Filter("IntID =", req.UserID).Filter("UserToken =", req.UserToken)
 	keys, err := query.GetAll(ctx, nil)
 	if err != nil || len(keys) != 1 {
 		log.Errorf(ctx, "User not found: %v (%v)", req, err)
